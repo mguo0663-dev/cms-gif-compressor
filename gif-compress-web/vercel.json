@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "build": {
+    "env": {
+      "NODE_VERSION": "18"
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\\.(css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2|ttf|map)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/js/encoder-worker.js",
+      "headers": [
+        { "key": "Content-Type", "value": "application/javascript" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}

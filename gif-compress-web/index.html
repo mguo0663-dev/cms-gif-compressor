@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GIF 压缩 · 智慧版网页</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=2.6" />
+</head>
+<body>
+  <div class="bg-gradient"></div>
+  <img class="bg-image" src="assets/dffdf.png" alt="background" />
+
+  <header class="site-header">
+    <div class="header-top">
+      <div class="logo">
+        <img class="logo-icon" src="assets/cms浅色图标.png" alt="CMS图标" />
+        <div class="logo-content">
+          <h1>CMS头图压缩平台</h1>
+          <span class="version-badge">Beta1.0</span>
+        </div>
+      </div>
+      <nav class="mode-tabs" aria-label="功能模式">
+        <button type="button" class="mode-tab active" data-mode="mp4" id="modeMp4"><span>MP4 转 GIF</span></button>
+        <button type="button" class="mode-tab" data-mode="gif" id="modeGif"><span>GIF 压缩</span></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <main class="app-main">
+      <section class="banner-card glass-card">
+        <img class="banner-image" src="assets/顶部视觉.png?v=2" alt="顶部视觉" />
+      </section>
+      <div class="cards-container">
+        <section class="preview-card glass-card" id="originalCard">
+          <div class="card-header hidden" id="originalCardHeader">
+            <h2 class="card-title">原始文件</h2>
+            <div class="file-meta hidden" id="fileMeta">
+              <div class="meta-item">
+                <span class="meta-label">大小</span>
+                <span class="meta-value" id="fileSize">—</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">尺寸</span>
+                <span class="meta-value" id="fileDimensions">—</span>
+              </div>
+              <div class="meta-item" id="bitrateItem">
+                <span class="meta-label">比特率</span>
+                <span class="meta-value" id="fileBitrate">—</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="upload-zone" id="dropZone">
+              <input type="file" id="fileInput" accept="image/gif" hidden />
+              <div class="upload-inner" id="uploadPrompt">
+                <div class="upload-icon" aria-hidden="true">
+                  <img id="uploadIconMp4" class="upload-icon-img upload-icon-mp4" src="assets/MP4上传图标.png" alt="MP4上传图标" />
+                  <img id="uploadIconGif" class="upload-icon-img upload-icon-gif hidden" src="assets/GIF上传图标.png" alt="GIF上传图标" />
+                </div>
+                <p class="upload-title" id="uploadTitle"><span class="upload-click">点击</span>/拖拽文件到此处压缩</p>
+                <p class="upload-hint" id="uploadHint">支持MP4格式，文件不超过200MB</p>
+              </div>
+              <div class="preview-area hidden" id="previewArea">
+                <img id="previewOrigImg" class="preview-image hidden" alt="原始图片" />
+                <video id="previewOrigVideo" class="preview-video hidden" autoplay loop muted playsinline></video>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="preview-card glass-card" id="compressedCard">
+          <div class="card-header">
+            <h2 class="card-title">压缩后</h2>
+          </div>
+          <div class="card-content">
+            <div class="params-panel" id="paramsPanel">
+              <h3 class="panel-title">压缩参数</h3>
+              <div class="control-grid">
+                <label class="control">
+                  <span class="control-label">画质 <em id="qualityVal">40</em></span>
+                  <input type="range" id="quality" min="20" max="100" value="40" />
+                  <span class="control-hint">越高越清晰、体积越大</span>
+                </label>
+                <label class="control">
+                  <span class="control-label">帧率 <em id="fpsVal">12</em> fps</span>
+                  <input type="range" id="fps" min="5" max="30" value="12" />
+                  <span class="control-hint">降低帧率可减小体积</span>
+                </label>
+                <label class="control">
+                  <span class="control-label">图像尺寸 <em id="sizeVal">原尺寸</em></span>
+                  <input type="range" id="imageSize" min="25" max="100" step="5" value="100" disabled />
+                  <span class="control-hint hidden" id="sizeHint">默认 100% 原尺寸</span>
+                </label>
+              </div>
+              <button type="button" class="btn-primary" id="compressBtn">
+                <span id="btnLabel">开始压缩</span>
+              </button>
+            </div>
+            <div class="loading-panel hidden" id="loadingPanel">
+              <div class="preview-area" style="width:100%;">
+                <img id="loadingBg" class="loading-bg" src="assets/loading-bg.png" alt="加载背景" />
+                <div class="loading-content">
+                  <p class="loading-title">压缩中</p>
+                  <p class="loading-text" id="loadingText">准备中…</p>
+                </div>
+              </div>
+            </div>
+            <div class="result-preview hidden" id="resultPreview">
+              <div class="preview-area" style="width:100%;">
+                <img id="previewNew" class="preview-image" alt="压缩后预览" />
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="result-panel glass-card hidden" id="resultPanel">
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">原始大小</span>
+            <span class="stat-value" id="origSize">—</span>
+          </div>
+          <div class="stat stat-highlight">
+            <span class="stat-label">压缩后</span>
+            <span class="stat-value" id="newSize">—</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">节省</span>
+            <span class="stat-value" id="savedPct">—</span>
+          </div>
+        </div>
+        <div class="result-actions">
+          <a class="btn-primary" id="downloadBtn" download="compressed.gif">一键下载</a>
+          <button type="button" class="btn-secondary" id="compressAgain">再压一次</button>
+        </div>
+      </section>
+
+      <p class="error hidden" id="errorMsg" role="alert"></p>
+    </main>
+
+    <aside class="overlay-panel glass-card" aria-label="叠加效果预览">
+      <div class="overlay-stage" id="overlayStage">
+        <img id="overlayBase" class="overlay-base" src="assets/mockup-bg-new.png" alt="上传的底图" />
+        <img id="overlayGif" class="overlay-gif hidden" alt="压缩后的 GIF 叠加" />
+      </div>
+      <div class="overlay-panel-foot">
+        <input type="file" id="bgImageInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+        <button type="button" class="btn-secondary overlay-change-btn" id="bgUploadBtn">更换底图</button>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="site-footer">
+    <p>与桌面版相同技术栈：tools.zip 中的 FFmpeg + Gifski · 网页端使用 WebAssembly 版 Gifski，帧提取由浏览器 Canvas 完成</p>
+  </footer>
+
+  <!-- 简单GIF预览lightbox（压缩后卡片点击放大） -->
+  <div class="gif-lightbox hidden" id="gifLightbox" role="dialog" aria-modal="true" aria-label="GIF预览">
+    <div class="gif-lightbox-backdrop" id="gifLightboxBackdrop"></div>
+    <img id="gifLightboxImg" class="gif-lightbox-img hidden" alt="GIF预览" draggable="false" />
+    <video id="gifLightboxVideo" class="gif-lightbox-img hidden" autoplay loop muted playsinline></video>
+    <p class="gif-lightbox-hint">点击空白处关闭 · 空格键切换原图/压缩图</p>
+  </div>
+
+  <!-- Overlay预览lightbox（最右侧效果预览点击放大，16:9卡片） -->
+  <div class="lightbox hidden" id="lightbox" role="dialog" aria-modal="true" aria-label="图片预览">
+    <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+    <div class="lightbox-stage" id="lightboxStage">
+      <div class="lightbox-card" id="lightboxCard">
+        <div class="lightbox-content" id="lightboxContent">
+          <img id="lightboxBase" class="hidden" alt="底图" draggable="false" />
+          <img id="lightboxGif" class="hidden" alt="GIF" draggable="false" />
+        </div>
+        <img id="lightboxOverlay" class="lightbox-overlay hidden" src="assets/overlay-image.png" alt="覆盖层" draggable="false" />
+      </div>
+    </div>
+    <div class="lightbox-info" id="lightboxInfo">
+      <span>GIF位置: <span id="posX">0</span>,<span id="posY">0</span></span>
+      <span>GIF缩放: <span id="scaleVal">100%</span></span>
+    </div>
+    <p class="lightbox-hint">滚轮缩放 · 拖动底图 · 点击空白处关闭</p>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

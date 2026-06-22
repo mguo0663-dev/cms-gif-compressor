@@ -171,7 +171,6 @@ body {
   gap: 4px;
   border-radius: var(--radius-md);
   background: #ffffff;
-  border: 1px solid var(--border);
 }
 
 .mode-tab {

@@ -834,12 +834,10 @@ function openLightbox(isOriginal = false) {
     card.style.width = stageWidth + "px";
     card.style.height = stageHeight + "px";
     
-    if (targetImg && targetImg.naturalWidth > 0) {
-      content.style.width = targetImg.naturalWidth + "px";
-      content.style.height = targetImg.naturalHeight + "px";
-    }
+    content.style.width = "1920px";
+    content.style.height = "1080px";
     
-    resetTransform(stageWidth, stageHeight, targetImg.naturalWidth, targetImg.naturalHeight);
+    resetTransform(stageWidth, stageHeight);
   }
   
   if (targetImg.complete && targetImg.naturalWidth > 0) {
@@ -871,7 +869,6 @@ function openOverlayLightbox() {
     const stage = document.getElementById("lightboxStage");
     const card = document.getElementById("lightboxCard");
     const content = document.getElementById("lightboxContent");
-    const baseImg = document.getElementById("lightboxBase");
     
     const maxHeight = window.innerHeight * 0.95;
     const maxWidth = window.innerWidth * 0.95;
@@ -889,12 +886,10 @@ function openOverlayLightbox() {
     card.style.width = stageWidth + "px";
     card.style.height = stageHeight + "px";
     
-    if (baseImg && baseImg.naturalWidth > 0) {
-      content.style.width = baseImg.naturalWidth + "px";
-      content.style.height = baseImg.naturalHeight + "px";
-    }
+    content.style.width = "1920px";
+    content.style.height = "1080px";
     
-    resetTransform(stageWidth, stageHeight, baseImg.naturalWidth, baseImg.naturalHeight);
+    resetTransform(stageWidth, stageHeight);
   }
   
   const baseImg = document.getElementById("lightboxBase");
@@ -942,7 +937,9 @@ function closeLightbox() {
 function updateTransform() {
   const contentElement = document.getElementById("lightboxContent");
   if (contentElement) {
-    contentElement.style.transform = `translate(${gifCurrentX}px, ${gifCurrentY}px) scale(${gifCurrentScale})`;
+    const actualX = gifCurrentX * stageScale * gifCurrentScale;
+    const actualY = gifCurrentY * stageScale * gifCurrentScale;
+    contentElement.style.transform = `translate(${actualX}px, ${actualY}px) scale(${stageScale * gifCurrentScale})`;
   }
   updateInfo();
 }
@@ -953,31 +950,36 @@ function updateInfo() {
   if (scaleVal) scaleVal.textContent = (gifCurrentScale * 100).toFixed(1) + "%";
 }
 
-function resetTransform(stageWidth, stageHeight, imgWidth, imgHeight) {
-  gifCurrentX = 590;
-  gifCurrentY = 110;
-  gifCurrentScale = 0.202;
+function resetTransform(stageWidth, stageHeight) {
+  gifCurrentX = 4529;
+  gifCurrentY = 842;
+  gifCurrentScale = 0.167;
+  stageScale = stageHeight / DESIGN_HEIGHT;
   updateTransform();
 }
+
+const DESIGN_WIDTH = 1920;
+const DESIGN_HEIGHT = 1080;
 
 let gifCurrentX = 0;
 let gifCurrentY = 0;
 let gifCurrentScale = 1;
+let stageScale = 1;
 
 const lightboxCard = document.getElementById("lightboxCard");
 
 lightboxCard.addEventListener("mousedown", (e) => {
   isDragging = true;
-  dragStartX = e.clientX - gifCurrentX;
-  dragStartY = e.clientY - gifCurrentY;
+  dragStartX = e.clientX - gifCurrentX * stageScale * gifCurrentScale;
+  dragStartY = e.clientY - gifCurrentY * stageScale * gifCurrentScale;
   e.stopPropagation();
 });
 
 document.addEventListener("mousemove", (e) => {
   if (isDragging) {
     e.preventDefault();
-    gifCurrentX = e.clientX - dragStartX;
-    gifCurrentY = e.clientY - dragStartY;
+    gifCurrentX = (e.clientX - dragStartX) / (stageScale * gifCurrentScale);
+    gifCurrentY = (e.clientY - dragStartY) / (stageScale * gifCurrentScale);
     updateTransform();
   }
 });
@@ -990,7 +992,7 @@ lightboxCard.addEventListener("wheel", (e) => {
   e.preventDefault();
   const delta = -Math.sign(e.deltaY) * 0.001;
   let newScale = gifCurrentScale + delta;
-  newScale = Math.max(0.1, Math.min(5, Math.round(newScale * 1000) / 1000));
+  newScale = Math.max(0.01, Math.min(2, Math.round(newScale * 1000) / 1000));
   
   if (newScale !== gifCurrentScale) {
     const scaleRatio = newScale / gifCurrentScale;
@@ -998,8 +1000,11 @@ lightboxCard.addEventListener("wheel", (e) => {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
     
-    gifCurrentX = mouseX - (mouseX - gifCurrentX) * scaleRatio;
-    gifCurrentY = mouseY - (mouseY - gifCurrentY) * scaleRatio;
+    const designMouseX = mouseX / (stageScale * gifCurrentScale);
+    const designMouseY = mouseY / (stageScale * gifCurrentScale);
+    
+    gifCurrentX = designMouseX - (designMouseX - gifCurrentX) * scaleRatio;
+    gifCurrentY = designMouseY - (designMouseY - gifCurrentY) * scaleRatio;
     gifCurrentScale = newScale;
     
     updateTransform();

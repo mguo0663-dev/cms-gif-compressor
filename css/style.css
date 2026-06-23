@@ -77,7 +77,7 @@ body {
 }
 
 .site-header {
-  padding: 8px 24px 16px;
+  padding: 16px 24px;
   max-width: 1400px;
   margin: 0 auto;
   border-bottom: 1px solid var(--border-light);
@@ -102,12 +102,16 @@ body {
   object-fit: contain;
 }
 
+.logo-content {
+  display: flex;
+  align-items: center;
+}
+
 .logo-content h1 {
   font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.01em;
-  display: inline;
 }
 
 .logo-content p {
@@ -126,8 +130,6 @@ body {
   font-weight: 500;
   color: #60a5fa;
   margin-left: 8px;
-  vertical-align: middle;
-  line-height: 1;
 }
 
 .app-layout {
@@ -246,6 +248,48 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+#compressedCard .card-header .estimate-size {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+#compressedCard .card-header .estimate-size em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.estimate-tag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  color: #fff;
+  background: linear-gradient(95deg, #43D2FC 0%, #2C5CFC 67%, #717DFB 100%);
+  transition: background 0.4s ease;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.estimate-tag .estimate-label {
+  font-weight: 400;
+}
+
+.estimate-tag .estimate-value {
+  font-weight: 800;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.estimate-tag .estimate-value .unit {
+  font-size: 10px;
+  font-weight: 800;
+  margin-left: 1px;
 }
 
 .card-title {
@@ -401,7 +445,7 @@ body {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0;
+  margin: 0 0 12px 0;
 }
 
 .control-grid {
@@ -515,7 +559,7 @@ body {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: fill;
   pointer-events: none;
 }
 
@@ -824,6 +868,8 @@ body {
 
 .lightbox-card {
   position: relative;
+  width: 100%;
+  height: 100%;
   background: #000;
   border-radius: 8px;
   overflow: hidden;
@@ -868,17 +914,18 @@ body {
 
 .lightbox-info {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 12px;
+  right: 12px;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
   color: #fff;
   font-size: 12px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
   display: flex;
   gap: 16px;
-  z-index: 100;
+  z-index: 1000;
+  pointer-events: none;
 }
 
 .lightbox-info span {

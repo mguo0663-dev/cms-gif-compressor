@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GIF 压缩 · 智慧版网页</title>
+  <title>CMS头图压缩平台</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
@@ -75,6 +75,10 @@
         <section class="preview-card glass-card" id="compressedCard">
           <div class="card-header">
             <h2 class="card-title">压缩后</h2>
+            <div class="estimate-tag" id="estimateTag">
+              <span class="estimate-label">预估</span>
+              <span class="estimate-value" id="estimateSize">—</span>
+            </div>
           </div>
           <div class="card-content">
             <div class="params-panel" id="paramsPanel">
@@ -102,7 +106,7 @@
             </div>
             <div class="loading-panel hidden" id="loadingPanel">
               <div class="preview-area" style="width:100%;">
-                <video id="loadingBg" class="loading-bg" src="assets/loading-bg.mp4" autoplay loop muted playsinline></video>
+                <video id="loadingBg" class="loading-bg" src="assets/加载态2.mp4" autoplay loop muted playsinline></video>
                 <div class="loading-content">
                   <p class="loading-title">压缩中</p>
                   <p class="loading-text" id="loadingText">准备中…</p>
@@ -147,10 +151,6 @@
         <img id="overlayBase" class="overlay-base" src="assets/mockup-bg-new.png" alt="上传的底图" />
         <img id="overlayGif" class="overlay-gif hidden" alt="压缩后的 GIF 叠加" />
       </div>
-      <div class="overlay-panel-foot">
-        <input type="file" id="bgImageInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
-        <button type="button" class="btn-secondary overlay-change-btn" id="bgUploadBtn">更换底图</button>
-      </div>
     </aside>
   </div>
 
@@ -176,11 +176,11 @@
           <img id="lightboxGif" class="hidden" alt="GIF" draggable="false" />
         </div>
         <img id="lightboxOverlay" class="lightbox-overlay hidden" src="assets/overlay-image.png" alt="覆盖层" draggable="false" />
+        <div class="lightbox-info" id="lightboxInfo">
+          <span>GIF位置: <span id="posX">0</span>,<span id="posY">0</span></span>
+          <span>GIF缩放: <span id="scaleVal">100%</span></span>
+        </div>
       </div>
-    </div>
-    <div class="lightbox-info" id="lightboxInfo">
-      <span>GIF位置: <span id="posX">0</span>,<span id="posY">0</span></span>
-      <span>GIF缩放: <span id="scaleVal">100%</span></span>
     </div>
     <p class="lightbox-hint">滚轮缩放 · 拖动底图 · 点击空白处关闭</p>
   </div>

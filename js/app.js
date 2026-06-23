@@ -38,6 +38,7 @@ const qualityVal = $("qualityVal");
 const fpsVal = $("fpsVal");
 const sizeVal = $("sizeVal");
 const sizeHint = $("sizeHint");
+const estimateSize = $("estimateSize");
 const modeGif = $("modeGif");
 const modeMp4 = $("modeMp4");
 const origSize = $("origSize");
@@ -68,8 +69,6 @@ const scaleVal = $("scaleVal");
 const overlayBase = $("overlayBase");
 const overlayGif = $("overlayGif");
 const overlayStage = $("overlayStage");
-const bgImageInput = $("bgImageInput");
-const bgUploadBtn = $("bgUploadBtn");
 
 const uploadIconMp4 = $("uploadIconMp4");
 const uploadIconGif = $("uploadIconGif");
@@ -267,6 +266,59 @@ function updateSizeDisplay() {
   sizeVal.textContent = formatSizeLabel(pct);
 }
 
+function updateEstimate() {
+  if (!currentFile || !sourceSize) {
+    estimateSize.innerHTML = "—";
+    const tag = document.getElementById("estimateTag");
+    if (tag) tag.style.background = "";
+    return;
+  }
+  
+  const q = Number(quality.value);
+  const f = Number(fps.value);
+  const sizePct = Number(imageSize.value);
+  
+  const targetWidth = targetWidthFromPercent(sourceSize.width, sizePct);
+  const targetHeight = Math.round((sourceSize.height * targetWidth) / sourceSize.width);
+  const targetPixels = targetWidth * targetHeight;
+  
+  let frameCount;
+  const fileDuration = 5;
+  
+  if (isVideoFile(currentFile)) {
+    frameCount = Math.round(fileDuration * f);
+  } else if (isGifFile(currentFile)) {
+    frameCount = Math.max(10, Math.min(Math.round(currentFile.size / 50000), 200));
+  } else {
+    frameCount = 30;
+  }
+  
+  const qualityFactor = 0.3 + (q / 100) * 0.7;
+  const bytesPerPixel = 0.1 * qualityFactor;
+  
+  const estimatedBytes = Math.max(10240, Math.round(targetPixels * frameCount * bytesPerPixel));
+  
+  const mb = estimatedBytes / (1024 * 1024);
+  
+  if (mb < 4) {
+    estimateSize.innerHTML = `${mb.toFixed(1)}<span class="unit">MB</span>`;
+    setEstimateGradient("#43D2FC", "#2C5CFC", "#717DFB");
+  } else if (mb < 7) {
+    estimateSize.innerHTML = `${mb.toFixed(1)}<span class="unit">MB</span>`;
+    setEstimateGradient("#FF911C", "#FF8508", "#FF8F62");
+  } else {
+    estimateSize.innerHTML = `${mb.toFixed(1)}<span class="unit">MB</span>`;
+    setEstimateGradient("#FF3C3C", "#FC2C2C", "#FF2B9F");
+  }
+}
+
+function setEstimateGradient(c1, c2, c3) {
+  const tag = document.getElementById("estimateTag");
+  if (tag) {
+    tag.style.background = `linear-gradient(95deg, ${c1} 0%, ${c2} 67%, ${c3} 100%)`;
+  }
+}
+
 async function applySourceSize(file, knownSize = null) {
   sourceSize = null;
   imageSize.disabled = true;
@@ -279,11 +331,13 @@ async function applySourceSize(file, knownSize = null) {
     imageSize.disabled = false;
     sizeHint.textContent = `原图 ${sourceSize.width}×${sourceSize.height}，默认 100% 原尺寸`;
     updateSizeDisplay();
+    updateEstimate();
   } catch {
     imageSize.disabled = false;
     imageSize.value = "100";
     sizeVal.textContent = "原尺寸";
     sizeHint.textContent = "无法读取尺寸，将按原图处理";
+    updateEstimate();
   }
 }
 
@@ -445,6 +499,8 @@ async function selectFile(file) {
   if (sourceSize) {
     await showFileInfo(file, sourceSize);
   }
+  
+  updateEstimate();
 }
 
 function resetFile() {
@@ -462,6 +518,9 @@ function resetFile() {
   lastEncodedSize = null;
   showResult = false;
   fileInput.value = "";
+  estimateSize.innerHTML = "—";
+  const tag = document.getElementById("estimateTag");
+  if (tag) tag.style.background = "";
 
   overlayGif.classList.add("hidden");
   overlayGif.removeAttribute("src");
@@ -652,14 +711,17 @@ function bindSliders() {
   quality.addEventListener("input", () => {
     qualityVal.textContent = quality.value;
     updateSliderGradient(quality);
+    updateEstimate();
   });
   fps.addEventListener("input", () => {
     fpsVal.textContent = fps.value;
     updateSliderGradient(fps);
+    updateEstimate();
   });
   imageSize.addEventListener("input", () => {
     updateSizeDisplay();
     updateSliderGradient(imageSize);
+    updateEstimate();
   });
   
   updateSliderGradient(quality);
@@ -749,19 +811,8 @@ compressAgain.addEventListener("click", () => {
   resultPanel.classList.add("hidden");
   resultPreview.classList.add("hidden");
   paramsPanel.classList.remove("hidden");
+  updateEstimate();
 });
-
-bgUploadBtn.addEventListener("click", () => bgImageInput.click());
-bgImageInput.addEventListener("change", () => {
-  const bgFile = bgImageInput.files[0];
-  if (bgFile) {
-    if (bgImageObjectUrl) URL.revokeObjectURL(bgImageObjectUrl);
-    bgImageObjectUrl = URL.createObjectURL(bgFile);
-    overlayBase.src = bgImageObjectUrl;
-  }
-});
-
-let bgImageObjectUrl = null;
 
 // 简单GIF预览lightbox函数
 function openGifLightbox(isOriginal = false) {

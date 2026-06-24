@@ -26,6 +26,7 @@ const bitrateItem = $("bitrateItem");
 const paramsPanel = $("paramsPanel");
 const loadingPanel = $("loadingPanel");
 const loadingText = $("loadingText");
+const loadingPercent = $("loadingPercent");
 const resultPreview = $("resultPreview");
 const resultPanel = $("resultPanel");
 const compressBtn = $("compressBtn");
@@ -656,6 +657,7 @@ async function runCompress() {
   resultPreview.classList.add("hidden");
   resultPanel.classList.add("hidden");
   loadingText.textContent = "准备中…";
+  if (loadingPercent) loadingPercent.textContent = "0%";
 
   const syncLoadingSize = () => {
     if (!leftPreviewArea || !rightLoadingArea) return;
@@ -674,6 +676,11 @@ async function runCompress() {
     ? targetWidthFromPercent(sourceSize.width, sizePercent)
     : null;
 
+  let encodeProgressTimer = null;
+  const setProgress = (val) => {
+    if (loadingPercent) loadingPercent.textContent = Math.round(val) + "%";
+  };
+
   try {
     if (currentFile.size > 80 * 1024 * 1024) {
       throw new Error("文件超过 80MB，请先裁剪或缩短后再处理");
@@ -685,7 +692,7 @@ async function runCompress() {
       targetWidth,
       f,
       (p) => {
-        loadingText.textContent = `提取帧中… ${Math.round(p * 100)}%`;
+        setProgress(p * 40);
       }
     );
 
@@ -698,6 +705,21 @@ async function runCompress() {
     }
 
     loadingText.textContent = cfg.progressEncode(frames.length);
+    let encodeProgress = 40;
+    const encodeTarget = 95;
+    const frameCount = frames.length;
+    const encodeDuration = Math.max(2000, frameCount * 30);
+    const step = (encodeTarget - encodeProgress) / (encodeDuration / 100);
+    encodeProgressTimer = setInterval(() => {
+      encodeProgress += step;
+      if (encodeProgress >= encodeTarget) {
+        encodeProgress = encodeTarget;
+        clearInterval(encodeProgressTimer);
+        encodeProgressTimer = null;
+      }
+      setProgress(encodeProgress);
+    }, 100);
+
     const { gif: gifBytes } = await encodeWithGifski(
       frames,
       frameW,
@@ -706,7 +728,13 @@ async function runCompress() {
       q
     );
 
+    if (encodeProgressTimer) {
+      clearInterval(encodeProgressTimer);
+      encodeProgressTimer = null;
+    }
+
     loadingText.textContent = "完成";
+    setProgress(100);
     resultBlob = new Blob([gifBytes], { type: "image/gif" });
     lastEncodedSize = await probeMediaSize(
       new File([resultBlob], "out.gif", { type: "image/gif" })
@@ -765,6 +793,10 @@ async function runCompress() {
     }
   } catch (err) {
     console.error(err);
+    if (encodeProgressTimer) {
+      clearInterval(encodeProgressTimer);
+      encodeProgressTimer = null;
+    }
     showError(err.message || "处理失败");
     loadingPanel.classList.add("hidden");
     window.removeEventListener("resize", syncLoadingSize);

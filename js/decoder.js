@@ -49,7 +49,7 @@ export async function probeGifLogicalSize(buffer) {
 function drawScaledFrame(ctx, image, outW, outH) {
   ctx.clearRect(0, 0, outW, outH);
   ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
+  ctx.imageSmoothingQuality = "low";
   ctx.drawImage(image, 0, 0, outW, outH);
   return ctx.getImageData(0, 0, outW, outH);
 }
@@ -92,7 +92,7 @@ function unmountVideoCapture(host) {
 }
 
 async function waitForVideoFrameReady() {
-  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await new Promise((r) => requestAnimationFrame(r));
 }
 
 function assertFrameDimensions(imageData, outW, outH, srcW, srcH) {
@@ -122,51 +122,6 @@ async function captureFrameFromVideo(ctx, video, outW, outH, srcW) {
   if (video.paused) {
     await video.play().catch(() => {});
   }
-
-  const drawToOutput = (source) => {
-    ctx.clearRect(0, 0, outW, outH);
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(source, 0, 0, outW, outH);
-    return ctx.getImageData(0, 0, outW, outH);
-  };
-
-  try {
-    if (typeof VideoFrame !== "undefined") {
-      const vf = new VideoFrame(video, { timestamp: (video.currentTime || 0) * 1e6 });
-      const bitmap = await createImageBitmap(vf, {
-        resizeWidth: outW,
-        resizeHeight: outH,
-        resizeQuality: "high",
-      });
-      vf.close();
-      const imageData = drawToOutput(bitmap);
-      bitmap.close();
-      return imageData;
-    }
-  } catch {
-    /* 回退 */
-  }
-
-  if (typeof createImageBitmap === "function") {
-    const natural = await createImageBitmap(video);
-    const halfRes = srcW > 0 && natural.width < srcW * 0.9;
-    if (halfRes || natural.width !== outW || natural.height !== outH) {
-      const imageData = drawToOutput(natural);
-      natural.close();
-      return imageData;
-    }
-    natural.close();
-    const bitmap = await createImageBitmap(video, {
-      resizeWidth: outW,
-      resizeHeight: outH,
-      resizeQuality: "high",
-    });
-    const imageData = drawToOutput(bitmap);
-    bitmap.close();
-    return imageData;
-  }
-
   return drawScaledFrame(ctx, video, outW, outH);
 }
 

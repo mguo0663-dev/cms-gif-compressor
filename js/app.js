@@ -1074,7 +1074,7 @@ function updateInfo() {
 }
 
 function resetTransform(stageWidth, stageHeight) {
-  gifCurrentX = 4529;
+  gifCurrentX = 4536;
   gifCurrentY = 842;
   gifCurrentScale = 0.167;
   stageScale = stageHeight / DESIGN_HEIGHT;

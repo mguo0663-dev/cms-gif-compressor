@@ -87,6 +87,74 @@ let showResult = false;
 let isDragging = false;
 let dragStartX = 0;
 let dragStartY = 0;
+
+// 同步卡片高度
+// 状态1：未上传文件（uploadPrompt 显示）→ 上传卡片底部 = 最右侧卡片底部
+// 状态2：已上传未压缩 → 都不动，自然高度
+// 状态3：压缩完成（resultPanel 显示）→ 最右侧卡片底部 = 结果面板底部
+function syncOverlayHeight() {
+  const overlayPanel = document.querySelector(".overlay-panel");
+  const originalCard = document.getElementById("originalCard");
+  const uploadPrompt = document.getElementById("uploadPrompt");
+  const resultPanel = document.getElementById("resultPanel");
+  if (!overlayPanel || !originalCard || !uploadPrompt || !resultPanel) return;
+
+  // 先重置
+  originalCard.style.height = "";
+  overlayPanel.style.height = "";
+
+  const resultVisible = !resultPanel.classList.contains("hidden") && resultPanel.offsetParent !== null;
+  const uploadVisible = !uploadPrompt.classList.contains("hidden");
+
+  if (resultVisible) {
+    // 状态3：最右侧卡片底部 = 结果面板底部
+    const resultBottom = resultPanel.getBoundingClientRect().bottom;
+    const overlayTop = overlayPanel.getBoundingClientRect().top;
+    const targetHeight = resultBottom - overlayTop;
+    if (targetHeight > 0) {
+      overlayPanel.style.height = targetHeight + "px";
+    }
+  } else if (uploadVisible) {
+    // 状态1：上传卡片底部 = 最右侧卡片底部
+    const overlayBottom = overlayPanel.getBoundingClientRect().bottom;
+    const cardTop = originalCard.getBoundingClientRect().top;
+    const targetHeight = overlayBottom - cardTop;
+    if (targetHeight > 0) {
+      originalCard.style.height = targetHeight + "px";
+    }
+  }
+  // 状态2：什么都不做
+}
+
+// 监听变化，自动重新对齐
+function setupOverlaySyncObserver() {
+  const overlayPanel = document.querySelector(".overlay-panel");
+  const overlayBase = document.getElementById("overlayBase");
+  const resultPanel = document.getElementById("resultPanel");
+  if (!overlayPanel) return;
+
+  if (typeof ResizeObserver !== "undefined") {
+    const ro = new ResizeObserver(() => syncOverlayHeight());
+    ro.observe(overlayPanel);
+    if (resultPanel) ro.observe(resultPanel);
+  }
+
+  if (typeof MutationObserver !== "undefined" && resultPanel) {
+    const mo = new MutationObserver(() => syncOverlayHeight());
+    mo.observe(resultPanel, { attributes: true, attributeFilter: ["class"] });
+  }
+
+  if (overlayBase) {
+    if (overlayBase.complete && overlayBase.naturalWidth > 0) {
+      syncOverlayHeight();
+    } else {
+      overlayBase.addEventListener("load", syncOverlayHeight);
+    }
+  }
+
+  window.addEventListener("resize", syncOverlayHeight);
+  syncOverlayHeight();
+}
 let currentTranslateX = 0;
 let currentTranslateY = 0;
 let currentScale = 1;
@@ -213,6 +281,8 @@ async function showFileInfo(file, size) {
   previewArea.classList.remove("hidden");
   fileMeta.classList.remove("hidden");
   originalCardHeader.classList.remove("hidden");
+
+  setTimeout(syncOverlayHeight, 50);
 
   if (isGifFile(file)) {
     previewOrigImg.src = origObjectUrl;
@@ -400,6 +470,7 @@ function refreshModeUI() {
     loadingPanel.classList.add("hidden");
     resultPreview.classList.remove("hidden");
     resultPanel.classList.remove("hidden");
+    setTimeout(syncOverlayHeight, 50);
     
     previewNew.src = resultObjectUrl;
     downloadBtn.href = resultObjectUrl;
@@ -812,6 +883,7 @@ compressAgain.addEventListener("click", () => {
   resultPreview.classList.add("hidden");
   paramsPanel.classList.remove("hidden");
   updateEstimate();
+  setTimeout(syncOverlayHeight, 50);
 });
 
 // 简单GIF预览lightbox函数
@@ -1110,3 +1182,4 @@ document.addEventListener("keydown", (e) => {
 bindSliders();
 applyModeChrome("mp4");
 refreshModeUI();
+setupOverlaySyncObserver();

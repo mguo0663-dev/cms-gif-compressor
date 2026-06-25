@@ -1,4 +1,4 @@
-# GIF 压缩智慧版 · 网页
+# CMS头图压缩平台
 
 基于桌面版 `tools.zip` 中的 **FFmpeg + Gifski** 技术路线，在浏览器中实现同等流程：
 
@@ -18,7 +18,7 @@ cd gif-compress-web
 npx --yes serve -p 8080
 ```
 
-浏览器访问：http://localhost:8080
+浏览器访问：[http://localhost:8080](https://cms-gif-compressor.vercel.app/)
 
 ## 功能模式
 
